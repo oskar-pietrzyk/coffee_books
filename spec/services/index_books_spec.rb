@@ -29,4 +29,15 @@ RSpec.describe IndexBooks do
     expect(result.total_count).to eq(3)
   end
 
+  it "excludes archived books" do
+    archived_book = Book.create!(title: "Dune", author: "Frank Herbert", archived: true)
+    active_book = Book.create!(title: "Foundation", author: "Isaac Asimov")
+
+    result = described_class.call(author: "")
+
+    expect(result.books).to eq([active_book])
+    expect(result.books).not_to include(archived_book)
+    expect(result.total_count).to eq(1)
+  end
+
 end

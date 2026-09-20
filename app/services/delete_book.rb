@@ -8,20 +8,20 @@ class DeleteBook < ApplicationService
   def call
     book = Book.find_by!(uuid: uuid)
     rental = book.rentals.active.includes(:reader).first
-    serialized_book = BookSerializer.serialize(book)
 
     if book.borrowed?
-      raise BookBorrowedError.new(book: book, rental: rental, serialized_book: serialized_book)
+      raise BookBorrowedError.new(
+        book: book,
+        rental: rental,
+        serialized_book: BookSerializer.serialize(book)
+      )
     end
 
-    if book.rentals.exists?
-      raise BookHasRentalHistoryError.new(book: book, serialized_book: serialized_book)
-    end
-
-    book.destroy!
+    book.update!(archived: true)
+    serialized_book = BookSerializer.serialize(book)
 
     {
-      message: 'Book deleted',
+      message: 'Book archived',
       book: serialized_book
     }
   end

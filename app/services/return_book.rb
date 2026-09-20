@@ -7,6 +7,8 @@ class ReturnBook < ApplicationService
 
   def call
     book.with_lock do
+      raise InvalidBookStatusUpdate, ["book is archived"] if book.archived?
+
       rental = book.rentals.active.first
       raise InvalidBookStatusUpdate, ["book has no active rental to return"] unless rental
 

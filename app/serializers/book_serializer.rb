@@ -16,6 +16,7 @@ class BookSerializer
       title: book.title,
       author: book.author,
       availability_status: book.availability_status,
+      archived: book.archived,
       rentals: book.rentals.includes(:reader).order(:borrowed_at).map do |rental|
         {
           id: rental.id,

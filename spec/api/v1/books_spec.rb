@@ -180,22 +180,23 @@ RSpec.describe "Books API", type: :request do
   end
 
   describe "DELETE /v1/books/:uuid" do
-    it "deletes an available book" do
+    it "archives an available book" do
       book = Book.create!(title: "Dune", author: "Frank Herbert")
 
       delete "/v1/books/#{book.uuid}"
 
       expect(last_response).to have_http_status(:ok)
       expect(JSON.parse(last_response.body)).to include(
-        "message" => "Book deleted",
+        "message" => "Book archived",
         "book" => include(
           "uuid" => book.uuid,
           "title" => book.title,
           "author" => book.author,
-          "availability_status" => "available"
+          "availability_status" => "available",
+          "archived" => true
         )
       )
-      expect(Book.find_by(id: book.id)).to be_nil
+      expect(Book.find_by(id: book.id)).to be_archived
     end
 
     it "returns reader details when the book is borrowed" do
@@ -226,7 +227,7 @@ RSpec.describe "Books API", type: :request do
       )
     end
 
-    it "preserves rental history by rejecting deletion after a returned rental" do
+    it "archives a book while preserving returned rental history" do
       book = Book.create!(title: "Dune", author: "Frank Herbert")
       reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
       rental = Rental.create!(book: book, reader: reader)
@@ -235,9 +236,10 @@ RSpec.describe "Books API", type: :request do
       delete "/v1/books/#{book.uuid}"
 
       response = JSON.parse(last_response.body)
-      expect(last_response).to have_http_status(:conflict)
-      expect(response["error"]).to eq("Book has rental history")
-      expect(Book.find_by(id: book.id)).to be_present
+      expect(last_response).to have_http_status(:ok)
+      expect(response).to include("message" => "Book archived")
+      expect(response["book"]["archived"]).to be(true)
+      expect(Book.find_by(id: book.id)).to be_archived
       expect(Rental.find_by(id: rental.id)).to be_present
     end
 
@@ -254,7 +256,7 @@ RSpec.describe "Books API", type: :request do
       delete "/v1/books/#{book.uuid}"
 
       expect(last_response).to have_http_status(:ok)
-      expect(Book.find_by(id: book.id)).to be_nil
+      expect(Book.find_by(id: book.id)).to be_archived
       expect(Book.find_by(id: duplicate.id)).to be_present
     end
   end
