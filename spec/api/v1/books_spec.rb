@@ -37,4 +37,69 @@ RSpec.describe "Books API", type: :request do
       expect(swagger.dig("paths", "/v1/books", "post")).to be_present
     end
   end
+
+  describe "DELETE /v1/books/:uuid" do
+    it "deletes an available book" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+
+      delete "/v1/books/#{book.uuid}"
+
+      expect(last_response).to have_http_status(:ok)
+      expect(JSON.parse(last_response.body)).to include(
+        "message" => "Book deleted",
+        "book" => include(
+          "uuid" => book.uuid,
+          "title" => book.title,
+          "author" => book.author,
+          "availability_status" => "available"
+        )
+      )
+      expect(Book.find_by(id: book.id)).to be_nil
+    end
+
+    it "returns reader details when the book is borrowed" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+      reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
+      Rental.create!(book: book, reader: reader)
+      book.update!(availability_status: :borrowed)
+
+      delete "/v1/books/#{book.uuid}"
+
+      response = JSON.parse(last_response.body)
+      expect(last_response).to have_http_status(:conflict)
+      expect(response).to include("error" => "Book borrowed")
+      expect(response["book"]).to include(
+        "uuid" => book.uuid,
+        "availability_status" => "borrowed",
+        "rentals" => include(
+          include(
+            "reading_status" => "borrowed",
+            "reader" => include("uuid" => reader.uuid)
+          )
+        )
+      )
+      expect(response["reader"]).to include(
+        "uuid" => reader.uuid,
+        "full_name" => reader.full_name,
+        "email" => reader.email
+      )
+    end
+
+    it "returns not found for an unknown book" do
+      delete "/v1/books/999999"
+
+      expect(last_response).to have_http_status(:not_found)
+    end
+
+    it "uses uuid when books have the same title and author" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+      duplicate = Book.create!(title: book.title, author: book.author)
+
+      delete "/v1/books/#{book.uuid}"
+
+      expect(last_response).to have_http_status(:ok)
+      expect(Book.find_by(id: book.id)).to be_nil
+      expect(Book.find_by(id: duplicate.id)).to be_present
+    end
+  end
 end

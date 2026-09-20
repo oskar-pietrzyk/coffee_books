@@ -12,6 +12,16 @@ module V1
         status 201
         BookSerializer.serialize(book)
       end
+
+      desc 'Delete an available book', success: { code: 200, message: 'Book deleted' }
+      params do
+        requires :uuid, type: String, desc: 'Book public identifier'
+      end
+      delete ':uuid' do
+        deleted_book = ::DeleteBook.call(uuid: params[:uuid])
+
+        deleted_book
+      end
     end
   end
 end
