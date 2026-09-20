@@ -35,6 +35,45 @@ RSpec.describe "Books API", type: :request do
 
       expect(last_response).to have_http_status(:ok)
       expect(swagger.dig("paths", "/v1/books", "post")).to be_present
+      expect(swagger.dig("paths", "/v1/books/{uuid}", "get")).to be_present
+    end
+  end
+
+  describe "GET /v1/books/:uuid" do
+    it "returns one serialized book with rental history by uuid" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+      reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
+      rental = Rental.create!(book: book, reader: reader)
+      book.update!(availability_status: :borrowed)
+
+      get "/v1/books/#{book.uuid}"
+
+      response = JSON.parse(last_response.body)
+
+      expect(last_response).to have_http_status(:ok)
+      expect(response).to include(
+        "uuid" => book.uuid,
+        "title" => book.title,
+        "author" => book.author,
+        "availability_status" => "borrowed"
+      )
+      expect(response["rentals"]).to include(
+        include(
+          "id" => rental.id,
+          "reading_status" => "borrowed",
+          "reader" => include(
+            "uuid" => reader.uuid,
+            "full_name" => reader.full_name,
+            "email" => reader.email
+          )
+        )
+      )
+    end
+
+    it "returns not found for an unknown uuid" do
+      get "/v1/books/999999"
+
+      expect(last_response).to have_http_status(:not_found)
     end
   end
 

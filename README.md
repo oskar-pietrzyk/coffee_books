@@ -20,6 +20,22 @@ docker compose run --rm web ./bin/rails console
 docker compose run --rm web ./bin/rspec
 ```
 
+Books created through the Docker API are stored in the Compose PostgreSQL
+database. To inspect that same database from your host, connect to
+`localhost:5433` with user `postgres`, password `postgres`, and database
+`coffee_books_development`, or run:
+
+```sh
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/coffee_books_development \
+	bundle exec rails console
+```
+
+You can also inspect it without configuring host Rails:
+
+```sh
+docker compose exec web ./bin/rails runner 'puts Book.order(:id).last.attributes'
+```
+
 Stop the containers with `docker compose down`. Add `-v` to that command when
 you also want to remove the PostgreSQL and Bundler volumes.
 

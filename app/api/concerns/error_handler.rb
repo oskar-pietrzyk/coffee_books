@@ -27,5 +27,6 @@ module ErrorHandler
         return_date: rental&.duration_date
       }, 409)
     end
+
   end
 end

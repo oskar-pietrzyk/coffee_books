@@ -13,6 +13,16 @@ module V1
         BookSerializer.serialize(book)
       end
 
+      desc 'Show a book by uuid', success: { code: 200, message: 'Book found' }
+      params do
+        requires :uuid, type: String, desc: 'Book public identifier'
+      end
+      get ':uuid' do
+        book = ::ShowBook.call(uuid: params[:uuid])
+
+        BookSerializer.serialize(book)
+      end
+
       desc 'Delete an available book', success: { code: 200, message: 'Book deleted' }
       params do
         requires :uuid, type: String, desc: 'Book public identifier'
