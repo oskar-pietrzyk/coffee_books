@@ -33,4 +33,5 @@ class BookSerializer
       end
     }
   end
+
 end

@@ -13,6 +13,18 @@ module V1
         BookSerializer.serialize(book)
       end
 
+      desc 'List books', success: { code: 200, message: 'Books found' }
+      params do
+        optional :title, type: String, desc: 'Partial book title filter'
+        optional :author, type: String, desc: 'Partial book author filter'
+      end
+      get do
+        BooksSerializer.serialize(::IndexBooks.call(
+          title: params[:title],
+          author: params[:author]
+        ))
+      end
+
       desc 'Show a book by uuid', success: { code: 200, message: 'Book found' }
       params do
         requires :uuid, type: String, desc: 'Book public identifier'

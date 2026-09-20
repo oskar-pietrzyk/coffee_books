@@ -77,6 +77,57 @@ RSpec.describe "Books API", type: :request do
     end
   end
 
+  describe "GET /v1/books" do
+    it "returns a compact serialized list of books" do
+      available_book = Book.create!(title: "Dune", author: "Frank Herbert")
+      borrowed_book = Book.create!(title: "Foundation", author: "Isaac Asimov")
+      borrowed_book.update!(availability_status: :borrowed)
+
+      get "/v1/books", author: ""
+
+      expect(last_response).to have_http_status(:ok)
+      expect(JSON.parse(last_response.body)).to contain_exactly(
+        {
+          "uuid" => available_book.uuid,
+          "title" => available_book.title,
+          "author" => available_book.author,
+          "availability_status" => "available"
+        },
+        {
+          "uuid" => borrowed_book.uuid,
+          "title" => borrowed_book.title,
+          "author" => borrowed_book.author,
+          "availability_status" => "borrowed"
+        }
+      )
+    end
+
+    it "requires title or author search parameters" do
+      get "/v1/books"
+
+      expect(last_response).to have_http_status(:bad_request)
+    end
+
+    it "filters by partial title and author" do
+      matching_book = Book.create!(title: "The Left Hand of Darkness", author: "Ursula K. Le Guin")
+      Book.create!(title: "Dune", author: "Frank Herbert")
+
+      get "/v1/books", title: "left hand", author: "le guin"
+
+      expect(last_response).to have_http_status(:ok)
+      expect(JSON.parse(last_response.body).pluck("uuid")).to eq([matching_book.uuid])
+    end
+
+    it "treats SQL-like search input as a value" do
+      Book.create!(title: "Dune", author: "Frank Herbert")
+
+      get "/v1/books", title: "' OR 1=1 --"
+
+      expect(last_response).to have_http_status(:ok)
+      expect(JSON.parse(last_response.body)).to eq([])
+    end
+  end
+
   describe "DELETE /v1/books/:uuid" do
     it "deletes an available book" do
       book = Book.create!(title: "Dune", author: "Frank Herbert")
