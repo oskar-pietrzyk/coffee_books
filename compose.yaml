@@ -17,7 +17,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    command: sh -c "./bin/rails db:prepare && ./bin/rails server -b 0.0.0.0"
+    command: >-
+      sh -c "./bin/rails db:prepare &&
+      if ! ./bin/rails runner 'exit(Book.exists? && Reader.exists?)'; then
+        ./bin/rails db:seed;
+      fi &&
+      exec ./bin/rails server -b 0.0.0.0"
     environment:
       RAILS_ENV: development
       DATABASE_URL: postgresql://postgres:postgres@db:5432/coffee_books_development
