@@ -29,6 +29,7 @@ class BorrowBook < ApplicationService
 
   def validate_book_state
     errors = []
+    errors << "book is archived" if book.archived?
     errors << "book is already borrowed" if book.borrowed?
     errors << "borrowed_at is required" if borrowed_at.blank?
     errors << "reader_uuid, full_name, and email are required" if reader_uuid.blank? && (full_name.blank? || email.blank?)

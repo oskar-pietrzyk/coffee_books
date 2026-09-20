@@ -3,24 +3,24 @@ require "rails_helper"
 RSpec.describe DeleteBook do
   let(:book) { Book.create!(title: "Dune", author: "Frank Herbert") }
 
-  it "deletes an available book" do
+  it "archives an available book" do
     book_uuid = book.uuid
 
-    deleted_book = described_class.call(uuid: book_uuid)
+    archived_book = described_class.call(uuid: book_uuid)
 
-    expect(Book.find_by(uuid: book_uuid)).to be_nil
-    expect(deleted_book).to include(
-      message: 'Book deleted',
-      book: include(uuid: book_uuid, title: 'Dune', author: 'Frank Herbert')
+    expect(Book.find_by(uuid: book_uuid)).to be_archived
+    expect(archived_book).to include(
+      message: 'Book archived',
+      book: include(uuid: book_uuid, title: 'Dune', author: 'Frank Herbert', archived: true)
     )
   end
 
-  it "deletes only the book identified by uuid when title and author are duplicated" do
+  it "archives only the book identified by uuid when title and author are duplicated" do
     duplicate = Book.create!(title: book.title, author: book.author)
 
     described_class.call(uuid: book.uuid)
 
-    expect(Book.find_by(id: book.id)).to be_nil
+    expect(Book.find_by(id: book.id)).to be_archived
     expect(Book.find_by(id: duplicate.id)).to be_present
   end
 
@@ -52,15 +52,15 @@ RSpec.describe DeleteBook do
     }.to raise_error(ActiveRecord::RecordNotFound)
   end
 
-  it "preserves returned rental history" do
+  it "archives a book while preserving returned rental history" do
     reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
     rental = Rental.create!(book: book, reader: reader)
     rental.return!
 
-    error = catch_error { described_class.call(uuid: book.uuid) }
+    result = described_class.call(uuid: book.uuid)
 
-    expect(error).to be_a(BookHasRentalHistoryError)
-    expect(Book.find_by(id: book.id)).to be_present
+    expect(result[:message]).to eq('Book archived')
+    expect(Book.find_by(id: book.id)).to be_archived
     expect(Rental.find_by(id: rental.id)).to be_present
   end
 

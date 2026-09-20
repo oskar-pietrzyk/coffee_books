@@ -13,7 +13,7 @@ class IndexBooks < ApplicationService
   end
 
   def call
-    books = Book.all
+    books = Book.active
     books = books.where("title ILIKE ?", "%#{quoted_filter(title)}%") if title.present?
     books = books.where("author ILIKE ?", "%#{quoted_filter(author)}%") if author.present?
     books = books.order(created_at: :desc, id: :desc)

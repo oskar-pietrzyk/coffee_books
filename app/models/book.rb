@@ -1,6 +1,8 @@
 class Book < ApplicationRecord
   has_many :rentals, dependent: :restrict_with_error
 
+  scope :active, -> { where(archived: false) }
+
   before_validation :assign_uuid, on: :create
 
   enum :availability_status, { borrowed: "borrowed", available: "available" }

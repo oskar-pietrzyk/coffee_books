@@ -73,7 +73,7 @@ module V1
         BookSerializer.serialize(book)
       end
 
-      desc 'Delete an available book', success: { code: 200, message: 'Book deleted' }
+      desc 'Archive an available book', success: { code: 200, message: 'Book archived' }
       params do
         requires :uuid, type: String, desc: 'Book public identifier'
       end
