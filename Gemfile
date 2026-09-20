@@ -28,6 +28,10 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
+# Run background jobs with Redis-backed Sidekiq.
+gem "sidekiq", "~> 8.0"
+gem "sidekiq-cron", "~> 2.3"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 

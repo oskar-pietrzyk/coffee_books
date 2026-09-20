@@ -20,5 +20,10 @@ RUN bundle install
 
 COPY . .
 
+COPY bin/docker-dev-entrypoint /usr/local/bin/docker-dev-entrypoint
+RUN chmod +x /usr/local/bin/docker-dev-entrypoint
+
+ENTRYPOINT ["docker-dev-entrypoint"]
+
 EXPOSE 3000
 CMD ["./bin/rails", "server", "-b", "0.0.0.0"]

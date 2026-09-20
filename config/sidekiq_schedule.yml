@@ -1,0 +1,5 @@
+rental_expiration_reminders:
+  cron: "0 8 * * *"
+  class: RentalExpirationJob
+  queue: default
+  description: Send reminders for rentals due in three days or today

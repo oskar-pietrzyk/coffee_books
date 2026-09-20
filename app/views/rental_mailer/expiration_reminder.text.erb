@@ -1,0 +1,5 @@
+Hello <%= @rental.reader.full_name %>,
+
+<%= @rental.book.title %> by <%= @rental.book.author %> <%= @reminder_type == :due_today ? "is due today" : "is due in 3 days" %>.
+
+Return date: <%= @rental.duration_date %>
