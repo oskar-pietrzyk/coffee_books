@@ -77,6 +77,59 @@ RSpec.describe "Books API", type: :request do
     end
   end
 
+  describe "PATCH /v1/books/:uuid" do
+    it "borrows a book for an existing reader" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+      reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
+
+      patch "/v1/books/#{book.uuid}", {
+        availability_status: "borrowed",
+        borrowed_at: "2026-09-20T10:00:00Z",
+        reader_uuid: reader.uuid
+      }
+
+      expect(last_response).to have_http_status(:ok)
+      expect(JSON.parse(last_response.body)).to include("availability_status" => "borrowed")
+      expect(book.reload.rentals.active.first.reader).to eq(reader)
+    end
+
+    it "creates a reader when borrowing with reader details" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+
+      patch "/v1/books/#{book.uuid}", {
+        availability_status: "borrowed",
+        borrowed_at: "2026-09-20T10:00:00Z",
+        full_name: "Ada Lovelace",
+        email: "ada@example.com"
+      }
+
+      expect(last_response).to have_http_status(:ok)
+      expect(Reader.find_by(email: "ada@example.com")).to be_present
+    end
+
+    it "returns a book to available and closes its rental" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+      reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
+      rental = Rental.create!(book: book, reader: reader)
+      book.update!(availability_status: :borrowed)
+
+      patch "/v1/books/#{book.uuid}", availability_status: "available"
+
+      expect(last_response).to have_http_status(:ok)
+      expect(book.reload).to be_available
+      expect(rental.reload).to be_returned
+    end
+
+    it "rejects borrowing without rental details" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+
+      patch "/v1/books/#{book.uuid}", availability_status: "borrowed"
+
+      expect(last_response).to have_http_status(:unprocessable_content)
+      expect(JSON.parse(last_response.body)["details"]).to include("borrowed_at is required")
+    end
+  end
+
   describe "GET /v1/books" do
     it "returns a compact serialized list of books" do
       available_book = Book.create!(title: "Dune", author: "Frank Herbert")

@@ -1,10 +1,12 @@
 class DeleteBook < ApplicationService
+  attr_reader :uuid
+
   def initialize(uuid:)
     @uuid = uuid
   end
 
   def call
-    book = Book.find_by!(uuid: @uuid)
+    book = Book.find_by!(uuid: uuid)
     rental = book.rentals.active.includes(:reader).first
     serialized_book = BookSerializer.serialize(book)
 

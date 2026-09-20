@@ -10,6 +10,10 @@ module ErrorHandler
       error!({ error: 'Record not found', message: e.message }, 404)
     end
 
+    rescue_from ::InvalidBookStatusUpdate do |e|
+      error!({ error: 'Invalid book status update', details: e.details }, 422)
+    end
+
     rescue_from ::BookBorrowedError do |e|
       rental = e.rental
       reader = rental&.reader

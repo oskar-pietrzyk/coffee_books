@@ -35,6 +35,30 @@ module V1
         BookSerializer.serialize(book)
       end
 
+      desc 'Update book availability and its rental state', success: { code: 200, message: 'Book updated' }
+      params do
+        requires :uuid, type: String, desc: 'Book public identifier'
+        requires :availability_status, type: String, values: %w[available borrowed]
+        optional :borrowed_at, type: DateTime, desc: 'Borrowing date and time'
+        optional :duration_date, type: Date, desc: 'Return date; defaults to 30 days after borrowing'
+        optional :reader_uuid, type: String, desc: 'Existing reader public identifier'
+        optional :full_name, type: String, desc: 'New reader full name'
+        optional :email, type: String, desc: 'New reader email'
+      end
+      patch ':uuid' do
+        book = ::UpdateBook.call(
+          uuid: params[:uuid],
+          availability_status: params[:availability_status],
+          borrowed_at: params[:borrowed_at],
+          duration_date: params[:duration_date],
+          reader_uuid: params[:reader_uuid],
+          full_name: params[:full_name],
+          email: params[:email]
+        )
+
+        BookSerializer.serialize(book)
+      end
+
       desc 'Delete an available book', success: { code: 200, message: 'Book deleted' }
       params do
         requires :uuid, type: String, desc: 'Book public identifier'
