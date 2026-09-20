@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: coffee_books_development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coffee_books_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: sh -c "./bin/rails db:prepare && ./bin/rails server -b 0.0.0.0"
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/coffee_books_development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/rails
+      - bundle_data:/usr/local/bundle
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  bundle_data:
+  postgres_data:
