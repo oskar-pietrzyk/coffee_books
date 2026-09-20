@@ -1,5 +1,5 @@
 class Book < ApplicationRecord
-  has_many :rentals, dependent: :destroy
+  has_many :rentals, dependent: :restrict_with_error
 
   before_validation :assign_uuid, on: :create
 

@@ -14,6 +14,10 @@ class DeleteBook < ApplicationService
       raise BookBorrowedError.new(book: book, rental: rental, serialized_book: serialized_book)
     end
 
+    if book.rentals.exists?
+      raise BookHasRentalHistoryError.new(book: book, serialized_book: serialized_book)
+    end
+
     book.destroy!
 
     {

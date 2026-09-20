@@ -16,8 +16,15 @@ class RentalExpirationJob
     Rental.active
       .where(duration_date: duration_date, sent_column => nil)
       .find_each do |rental|
+        next unless claim_reminder(rental, sent_column)
+
         RentalMailer.expiration_reminder(rental, reminder_type: reminder_type).deliver_later
-        rental.update!(sent_column => Time.current)
       end
+  end
+
+  def claim_reminder(rental, sent_column)
+    Rental
+      .where(id: rental.id, reading_status: :borrowed, sent_column => nil)
+      .update_all(sent_column => Time.current) == 1
   end
 end

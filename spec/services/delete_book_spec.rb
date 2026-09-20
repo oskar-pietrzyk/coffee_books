@@ -52,6 +52,18 @@ RSpec.describe DeleteBook do
     }.to raise_error(ActiveRecord::RecordNotFound)
   end
 
+  it "preserves returned rental history" do
+    reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
+    rental = Rental.create!(book: book, reader: reader)
+    rental.return!
+
+    error = catch_error { described_class.call(uuid: book.uuid) }
+
+    expect(error).to be_a(BookHasRentalHistoryError)
+    expect(Book.find_by(id: book.id)).to be_present
+    expect(Rental.find_by(id: rental.id)).to be_present
+  end
+
   private
 
   def catch_error

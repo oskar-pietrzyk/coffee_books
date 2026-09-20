@@ -17,12 +17,26 @@ module V1
       params do
         optional :title, type: String, desc: 'Partial book title filter'
         optional :author, type: String, desc: 'Partial book author filter'
+        optional :page, type: Integer, default: 1, desc: 'Page number'
+        optional :per_page, type: Integer, default: 20, desc: 'Books per page, maximum 100'
       end
       get do
-        BooksSerializer.serialize(::IndexBooks.call(
+        result = ::IndexBooks.call(
           title: params[:title],
-          author: params[:author]
-        ))
+          author: params[:author],
+          page: params[:page],
+          per_page: params[:per_page]
+        )
+
+        {
+          books: BooksSerializer.serialize(result.books),
+          pagination: {
+            page: result.page,
+            per_page: result.per_page,
+            total_count: result.total_count,
+            total_pages: (result.total_count.to_f / result.per_page).ceil
+          }
+        }
       end
 
       desc 'Show a book by uuid', success: { code: 200, message: 'Book found' }
