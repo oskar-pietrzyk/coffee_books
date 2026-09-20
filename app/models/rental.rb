@@ -15,8 +15,7 @@ class Rental < ApplicationRecord
   scope :active, -> { where(reading_status: "borrowed") }
 
   def return!
-    update!(reading_status: "returned", returned_at: Time.current)
-    book.update!(availability_status: "available")
+    ReturnBook.call(book: book)
   end
 
   private

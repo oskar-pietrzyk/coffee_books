@@ -32,5 +32,13 @@ module ErrorHandler
       }, 409)
     end
 
+    rescue_from ::BookHasRentalHistoryError do |e|
+      error!({
+        error: 'Book has rental history',
+        message: e.message,
+        book: e.serialized_book
+      }, 409)
+    end
+
   end
 end

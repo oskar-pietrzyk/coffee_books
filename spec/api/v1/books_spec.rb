@@ -139,19 +139,17 @@ RSpec.describe "Books API", type: :request do
       get "/v1/books", author: ""
 
       expect(last_response).to have_http_status(:ok)
-      expect(JSON.parse(last_response.body)).to contain_exactly(
-        {
-          "uuid" => available_book.uuid,
-          "title" => available_book.title,
-          "author" => available_book.author,
-          "availability_status" => "available"
-        },
-        {
-          "uuid" => borrowed_book.uuid,
-          "title" => borrowed_book.title,
-          "author" => borrowed_book.author,
-          "availability_status" => "borrowed"
-        }
+      response = JSON.parse(last_response.body)
+
+      expect(response["books"]).to contain_exactly(
+        include("uuid" => available_book.uuid, "availability_status" => "available"),
+        include("uuid" => borrowed_book.uuid, "availability_status" => "borrowed")
+      )
+      expect(response["pagination"]).to include(
+        "page" => 1,
+        "per_page" => 20,
+        "total_count" => 2,
+        "total_pages" => 1
       )
     end
 
@@ -168,7 +166,7 @@ RSpec.describe "Books API", type: :request do
       get "/v1/books", title: "left hand", author: "le guin"
 
       expect(last_response).to have_http_status(:ok)
-      expect(JSON.parse(last_response.body).pluck("uuid")).to eq([matching_book.uuid])
+      expect(JSON.parse(last_response.body).fetch("books").pluck("uuid")).to eq([matching_book.uuid])
     end
 
     it "treats SQL-like search input as a value" do
@@ -226,6 +224,21 @@ RSpec.describe "Books API", type: :request do
         "full_name" => reader.full_name,
         "email" => reader.email
       )
+    end
+
+    it "preserves rental history by rejecting deletion after a returned rental" do
+      book = Book.create!(title: "Dune", author: "Frank Herbert")
+      reader = Reader.create!(full_name: "Ada Lovelace", email: "ada@example.com")
+      rental = Rental.create!(book: book, reader: reader)
+      rental.return!
+
+      delete "/v1/books/#{book.uuid}"
+
+      response = JSON.parse(last_response.body)
+      expect(last_response).to have_http_status(:conflict)
+      expect(response["error"]).to eq("Book has rental history")
+      expect(Book.find_by(id: book.id)).to be_present
+      expect(Rental.find_by(id: rental.id)).to be_present
     end
 
     it "returns not found for an unknown book" do
