@@ -20,6 +20,47 @@ docker compose run --rm web ./bin/rails console
 docker compose run --rm web ./bin/rspec
 ```
 
+Books created through the Docker API are stored in the Compose PostgreSQL
+database. To inspect that same database from your host, connect to
+`localhost:5433` with user `postgres`, password `postgres`, and database
+`coffee_books_development`, or run:
+
+```sh
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/coffee_books_development \
+	bundle exec rails console
+```
+
+You can also inspect it without configuring host Rails:
+
+```sh
+docker compose exec web ./bin/rails runner 'puts Book.order(:id).last.attributes'
+```
+
+## Test API with Swagger
+
+Start the Docker services, then open the Swagger UI:
+
+http://localhost:3000/swagger
+
+Use **Try it out** in Swagger to execute requests and inspect responses. The
+available book endpoints are:
+
+- `POST /v1/books` creates a book with `title` and `author`.
+- `GET /v1/books` lists books and optionally a `title` or `author` filter. Both
+	filters support partial, case-insensitive matching.
+- `GET /v1/books/{uuid}` shows one book, including rental and reader history.
+- `PATCH /v1/books/{uuid}` changes availability and updates the related rental.
+	Borrowing requires `borrowed_at` and either an existing `reader_uuid` or a
+	new reader's `full_name` and `email`.
+- `DELETE /v1/books/{uuid}` removes an available book only.
+
+After changing API code, restart the web container so the route and Swagger
+documentation are refreshed:
+
+```sh
+docker compose restart web
+```
+
 Stop the containers with `docker compose down`. Add `-v` to that command when
 you also want to remove the PostgreSQL and Bundler volumes.
 

@@ -7,6 +7,8 @@ module V1
       { status: 'ok' }
     end
 
+    mount Books
+
     add_swagger_documentation(
       api_version: 'v1',
       hide_documentation_path: true,
