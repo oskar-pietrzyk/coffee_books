@@ -150,7 +150,7 @@ GEM
       zeitwerk (>= 2.6)
     grape-swagger (2.2.0)
       grape (>= 2.1, < 5.0)
-    grape-swagger-rails (1.0.9)
+    grape-swagger-rails (1.0.10)
       haml-rails (>= 2.0, < 4.0)
       json (>= 2.0, < 3.0)
       ostruct (>= 0.6, < 1.0)
@@ -397,13 +397,6 @@ GEM
       activejob (>= 7.2)
       activerecord (>= 7.2)
       railties (>= 7.2)
-    solid_queue (1.7.0)
-      activejob (>= 7.1)
-      activerecord (>= 7.1)
-      concurrent-ruby (>= 1.3.1)
-      fugit (~> 1.11)
-      railties (>= 7.1)
-      thor (>= 1.3.1)
     sshkit (1.25.1)
       base64
       logger
@@ -478,7 +471,6 @@ DEPENDENCIES
   sidekiq-cron (~> 2.3)
   solid_cable
   solid_cache
-  solid_queue
   stimulus-rails
   thruster
   turbo-rails
@@ -539,7 +531,7 @@ CHECKSUMS
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   grape (4.0.1) sha256=a7e522b7eb8ca823c3440beb7e83d1613b8682ffdfa0015fbe8f29007d4b1224
   grape-swagger (2.2.0) sha256=e2b4a8a5d9848f4f43cc6c6f4862a4671a9767880795cff05e8dee963b3a331b
-  grape-swagger-rails (1.0.9) sha256=cdd3df81dab98ecbaa39ea03e58004ddfe86aefaf7aed96a1a2e873f2fb05aec
+  grape-swagger-rails (1.0.10) sha256=37ac88c26964fe2ee5ef8194b93efd89646bbcf5cb003cbaa1c4245679d40008
   haml (7.5.1) sha256=91c5843dd85d32042cc6218d2df8c81282403459958aa53caa58fda238adc287
   haml-rails (3.1.0) sha256=4366474d973e4b9d5326cb216f2073150cfeff4c2a3c07fadb49a490ffdf610b
   i18n (1.15.2) sha256=00f9eb62412fe593b2a65a97daa75300d37abb8f7202ec748e94b6d46a9dd1b5
@@ -626,7 +618,6 @@ CHECKSUMS
   sidekiq-cron (2.4.0) sha256=25595c5aee0c16d13a89466e5108af047fa4cfbf388199b39e1a600ca39472d4
   solid_cable (4.0.2) sha256=084636a67679ad00d23088b33c84047e614bcf41ee559db24b414d83cdc42d03
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41
-  solid_queue (1.7.0) sha256=6566b70b801d1c317c81bba7bcdd5677c019afac584a30374b4164002ca356d3
   sshkit (1.25.1) sha256=be3f10b9d6eb0b44d5eaba3f7cbe41bc6bb894bce4339688ac20124391455b78
   stimulus-rails (1.3.4) sha256=765676ffa1f33af64ce026d26b48e8ffb2e0b94e0f50e9119e11d6107d67cb06
   temple (0.10.7) sha256=369fe560adb6534674ce232899c2232df614bcb29c5359b05efedff7a57ed9c0
